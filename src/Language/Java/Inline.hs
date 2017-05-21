@@ -326,8 +326,9 @@ loadJavaWrappers = doit `seq` return ()
     {-# NOINLINE doit #-}
     doit = unsafePerformIO $ do
       keys <- staticPtrKeys
-      loader :: J ('Class "java.lang.ClassLoader") <-
-        callStatic "java.lang.ClassLoader" "getSystemClassLoader" []
+      loader :: J ('Class "java.lang.ClassLoader") <- do
+        thr <- callStatic "java.lang.Thread" "currentThread" []
+        call (thr :: J ('Class "java.lang.Thread")) "getContextClassLoader" []
       forM_ keys $ \key -> do
         sptr :: StaticPtr Any <- fromJust <$> unsafeLookupStaticPtr key
         let !x = deRefStaticPtr sptr
